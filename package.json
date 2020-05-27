@@ -1,0 +1,45 @@
+{
+    "name": "icecast-status",
+    "version": "1.0.0",
+    "description": "checks the status of an icecast server",
+    "main": "public/main.js",
+    "scripts": {
+        "dev": "cross-env NODE_ENV=development webpack --mode development --config webpack.config.js",
+        "tailwind-start": "tailwind build src/app.css -o public/dist/app.css",
+        "tailwind-build": "postcss src/app.css --output public/dist/app.min.css --env production",
+        "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ReeceM/icecast-status.git"
+    },
+    "keywords": [
+        "icecast",
+        "tailwindcss",
+        "status",
+        "javascript"
+    ],
+    "author": "ReeceM",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/ReeceM/icecast-status/issues"
+    },
+    "homepage": "https://icecast-status.netlify.app",
+    "devDependencies": {
+        "@babel/core": "^7.9.0",
+        "@babel/preset-env": "^7.9.5",
+        "@fullhuman/postcss-purgecss": "^2.1.2",
+        "@tailwindcss/ui": "^0.3.0",
+        "autoprefixer": "^9.7.6",
+        "babel-loader": "^8.1.0",
+        "cross-env": "^7.0.2",
+        "cssnano": "^4.1.10",
+        "postcss-cli": "^7.1.0",
+        "postcss-loader": "^3.0.0",
+        "tailwindcss": "^1.4.6",
+        "terser-webpack-plugin": "^3.0.2",
+        "webpack": "^4.42.1",
+        "webpack-cli": "^3.3.11"
+    }
+}
