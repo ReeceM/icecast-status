@@ -345,7 +345,7 @@
 								</template>
 
 								<!--  show a now streams notification and help tips thing-->
-								<template x-if="!url" id="template_alternate_help">
+								<template x-if="start" id="template_alternate_help">
 									<div class="flex justify-center">
 										<div
 											class="flex flex-grow flex-col p-6 w-full md:max-w-2xl bg-gray-100 shadow-md rounded">
@@ -373,7 +373,7 @@
 									</div>
 								</template>
 
-								<template x-if="!streams">
+								<template x-if="!streams && start == false">
 									<div class="flex items-center justify-center">
 										<div class="flex flex-col items-center justify-center max-w-md w-full p-6 bg-white rounded-md shadow-md">
 											<div>

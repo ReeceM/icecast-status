@@ -18,6 +18,7 @@ window.streamStats = () => {
 		streams: null,
 		url: 'https://example.com/status-json.xsl',
 		newUrl: null,
+		start: true,
 		showDetails: false,
 		mobileMenu: false,
 		expand_server_details: false,
@@ -105,6 +106,7 @@ window.streamStats = () => {
 			}
 
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
+				this.start = false;
 				this.collect();
 				this.interval = setInterval(() => {
 					if (this.loading == true) {
@@ -113,6 +115,8 @@ window.streamStats = () => {
 					console.log('[%s] Collecting', (new Date()).toLocaleTimeString());
 					this.collect()
 				}, this.currentInterval * 1000)
+			} else {
+				this.start = true;
 			}
         }
     }
