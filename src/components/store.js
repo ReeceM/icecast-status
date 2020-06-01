@@ -3,7 +3,7 @@
  *
  */
 let instanceSettings = {
-	version: '0.1.0',
+	version: '0.1.1',
 	onlineCheckInterval: 30,
 	offlineCheckInterval: 60,
 	currentInterval: 10,

@@ -1,6 +1,6 @@
 {
     "name": "icecast-status",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "checks the status of an icecast server",
     "main": "public/main.js",
     "scripts": {
