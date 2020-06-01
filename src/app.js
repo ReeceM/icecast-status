@@ -104,7 +104,7 @@ window.streamStats = () => {
 				}
 			}
 
-			if (this.url != null) {
+			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.collect();
 				this.interval = setInterval(() => {
 					if (this.loading == true) {
