@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Stream Status</title>
+	<!-- Primary Meta Tags -->
+	<title>IceCast Stream Status.</title>
+	<meta name="title" content="IceCast Stream Status.">
+	<meta name="description"
+		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
+
+	<!-- Open Graph / Facebook -->
+	<meta property="og:type" content="website">
+	<meta property="og:url" content="https://icecast-status.netlify.app/">
+	<meta property="og:title" content="IceCast Stream Status.">
+	<meta property="og:description"
+		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
+	<meta property="og:image" content="undraw_video_streaming_yyld.png">
+
+	<!-- Twitter -->
+	<meta property="twitter:card" content="summary_large_image">
+	<meta property="twitter:url" content="https://icecast-status.netlify.app/">
+	<meta property="twitter:title" content="IceCast Stream Status.">
+	<meta property="twitter:description"
+		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
+	<meta property="twitter:image" content="undraw_video_streaming_yyld.png">
+
+	<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.0.1/dist/alpine.js" defer></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<link rel="stylesheet" href="./dist/app.min.css">
+</head>
+
+<body>
+	<div class="bg-gray-50" x-data="streamStats()" x-init="init()">
+		<nav @keydown.window.escape="mobileMenu = false" class="bg-blue-800">
+			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+				<div class="flex items-center justify-between h-16">
+					<div class="flex items-center">
+						<div class="flex-shrink-0">
+							<svg class="h-8 w-8 text-blue-100" fill="none" stroke-linecap="round"
+								stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+								</path>
+							</svg>
+						</div>
+						<div class="hidden md:block">
+							<div class="ml-10 flex items-baseline">
+								<a href="#"
+									class="px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-900 focus:outline-none focus:text-white focus:bg-blue-700">Dashboard</a>
+								<a href="https://github.com/reecem/icecast-status#readme"
+									class="ml-4 px-3 py-2 rounded-md text-sm font-medium text-blue-300 hover:text-white hover:bg-blue-700 focus:outline-none focus:text-white focus:bg-blue-700">About</a>
+								<a href="#"
+									class="ml-4 px-3 py-2 rounded-md text-sm font-medium text-blue-300 hover:text-white hover:bg-blue-700 focus:outline-none focus:text-white focus:bg-blue-700">GitHub</a>
+							</div>
+						</div>
+					</div>
+					<div class="hidden md:block">
+						<div class="ml-4 flex items-center md:ml-6">
+							<button @click="open_settings = true"
+								class="p-1 border-2 border-transparent text-blue-400 rounded-full hover:text-white focus:outline-none focus:text-white focus:bg-blue-700">
+								<svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
+									stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+									</path>
+								</svg>
+							</button>
+						</div>
+					</div>
+					<div class="-mr-2 flex md:hidden">
+						<!-- Mobile menu button -->
+						<button @click="mobileMenu = !mobileMenu"
+							class="inline-flex items-center justify-center p-2 rounded-md text-blue-400 hover:text-white hover:bg-blue-700 focus:outline-none focus:bg-blue-700 focus:text-white"
+							x-bind:aria-label="mobileMenu ? 'Close main menu' : 'Main menu'"
+							x-bind:aria-expanded="mobileMenu" aria-label="Main menu">
+							<!-- Menu open: "hidden", Menu closed: "block" --> <svg x-state:on="Menu open"
+								x-state:off="Menu closed" :class="{ 'hidden': mobileMenu, 'block': !mobileMenu }"
+								class="h-6 w-6 block" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M4 6h16M4 12h16M4 18h16"></path>
+							</svg>
+							<!-- Menu open: "block", Menu closed: "hidden" -->
+							<svg x-state:on="Menu open" x-state:off="Menu closed"
+								:class="{ 'hidden': !mobileMenu, 'block': mobileMenu }" class="h-6 w-6 hidden"
+								stroke="currentColor" fill="none" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									d="M6 18L18 6M6 6l12 12"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div :class="{'block': mobileMenu, 'hidden': !mobileMenu}">
+				<div class="px-2 pt-2 pb-3 sm:px-3"> <a href="#"
+						class="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-900 focus:outline-none focus:text-white focus:bg-blue-700">Stream
+						Status</a>
+					<a href="#"
+						class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-blue-300 hover:text-white hover:bg-blue-700 focus:outline-none focus:text-white focus:bg-blue-700">About</a>
+					<a href="#"
+						class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-blue-300 hover:text-white hover:bg-blue-700 focus:outline-none focus:text-white focus:bg-blue-700">GitHub</a>
+				</div>
+				<div class="pt-4 pb-3 border-t border-blue-700">
+					<div class="px-2">
+						<!--- mt-3 -->
+						<button @click="open_settings = true"
+							class="mt-1 block px-3 py-2 rounded-md text-base font-medium text-blue-400 hover:text-white hover:bg-blue-700 focus:outline-none focus:text-white focus:bg-blue-700">Settings</button>
+					</div>
+				</div>
+			</div>
+		</nav>
+		<header class="bg-white shadow sticky top-0">
+			<div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 z-10">
+				<div class="flex flex-col md:flex-row justify-between items-center">
+					<h2 class="text-3xl font-bold leading-tight text-gray-900">
+						Stream Status
+					</h2>
+					<h3 x-data="headerTimer()" x-init="init()"
+						class="text-sm font-bold leading-tight w-full md:w-28 text-center inline-block text-gray-900 md:order-last"
+						x-text="currentTime"></h3>
+					<div class="mt-2 block md:hidden">
+						<button @click="expand_server_details = !expand_server_details"
+							class="bg-blue-500 text-blue-50 px-3 py-1 rounded-md shadow cursor-pointer active:bg-blue-300 active:text-black text-sm">Details</button>
+					</div>
+					<div :class="{'grid md:grid': expand_server_details, 'hidden md:grid': !expand_server_details}"
+						class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-1 mt-1 sm:mt-0">
+						<div class="inline-flex items-center">
+							<span class="text-gray-500 mr-4" title="Host"><svg class="h-4 w-4" fill="none"
+									stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path
+										d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+									</path>
+								</svg></span>
+							<span class="text-gray-600 text-sm font-light mr-10"><a :href="icecast.host"
+									class="hover:underline hover:text-indigo-500" target="_blank"
+									x-text="icecast.host"></a></span>
+						</div>
+						<div class="inline-flex items-center">
+							<span class="text-gray-500 mr-4" title="Server Location"><svg class="h-4 w-4" fill="none"
+									stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path
+										d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
+									</path>
+									<path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+								</svg></span>
+							<span class="text-gray-600 text-sm font-light mr-10" x-text="icecast.location"></span>
+						</div>
+						<div class="inline-flex items-center">
+							<span class="text-gray-500 mr-4" title="Server ID"><svg class="h-4 w-4" fill="none"
+									stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path
+										d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+									</path>
+								</svg></span>
+							<span class="text-gray-600 text-sm font-light mr-10" x-text="icecast.server_id"></span>
+						</div>
+						<div class="inline-flex items-center">
+							<span class="text-gray-500 mr-4" title="Server Start"><svg class="h-4 w-4" fill="none"
+									stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+									stroke="currentColor">
+									<path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+								</svg></span>
+							<span class="text-gray-600 text-sm font-light mr-10" x-text="icecast.server_start"></span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</header>
+
+		<main class="">
+			<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+				<template x-if="streams != null" id="actions_bar_template">
+					<div class="flex w-full px-6 justify-between my-1 py-1">
+						<div class="inline-flex">
+							<button @click="refresh()"
+								class="flex p-2 text-gray-900 bg-green-300 m-auto rounded-full hover:shadow-md active:bg-green-400 active:text-white">
+								<svg class="h-5 w-5" :class="{'text-gray-800' : !loading, 'rotate-center': loading}" fill="none"
+									stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+									stroke="currentColor" viewBox="0 0 24 24">
+									<path
+										d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+									</path>
+								</svg>
+								<!-- <span x-text="!loading ? 'Refresh' : 'Refreshing ...'">Refresh</span> -->
+							</button>
+						</div>
+						<div class="inline-flex">
+							<div class="flex justify-between">
+								<div class="px-6 py-2 whitespace-no-wrap border-b border-gray-200">
+									<div class="text-sm leading-5 text-gray-900">Refreshed At</div>
+									<div class="text-sm leading-5 text-gray-500" x-text="refreshedAt"></div>
+								</div>
+								<div class="px-6 py-2 whitespace-no-wrap border-b border-gray-200">
+									<div class="text-sm leading-5 text-gray-900">Refreshes At</div>
+									<div class="text-sm leading-5 text-gray-500" x-text="refreshesAt"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</template>
+				<!-- main section -->
+				<div class="px-4 py-6 sm:px-0">
+					<div>
+						<div class="flex flex-col">
+							<div class="-my-2 py-2 overflow-x-auto sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+								<template x-if="streams != null" id="table_box">
+									<div
+										class="align-middle inline-block min-w-full shadow overflow-hidden sm:rounded-lg border-b border-gray-200">
+										<!-- show the streams listings -->
+										<table class="min-w-full">
+											<thead class="hidden lg:table-header-group md:table-header-group">
+												<tr>
+													<th
+														class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+														Mountpoint
+													</th>
+													<th
+														class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+														Info
+													</th>
+													<th
+														class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+														Listeners <small
+															class="text-gray-500 text-xs tracking-widest">(current/peak)</small>
+													</th>
+												</tr>
+											</thead>
+											<tbody class="bg-white">
+												<template x-if="streams != null" id="table_body_template">
+													<template x-for="stream in streams" :key="stream">
+														<tr class="hidden lg:table-row md:table-row">
+															<td
+																class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+																<div
+																	class="text-sm leading-5 font-medium text-gray-900">
+																	<span class="inline-flex items-center">
+																		<a :href="stream.listenurl"
+																			class="hover:underline hover:text-gray-700"
+																			target="_blank"
+																			x-text="stream.listenurl"></a>
+																		<svg class="h-4 w-4 ml-1" fill="none"
+																			stroke-linecap="round"
+																			stroke-linejoin="round" stroke-width="2"
+																			stroke="currentColor" viewBox="0 0 24 24">
+																			<path
+																				d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+																			</path>
+																		</svg>
+																	</span>
+																</div>
+																<div class="text-xs leading-5 font-light text-gray-500"
+																	x-text="stream.bitrate"></div>
+															</td>
+															<td
+																class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+																<div class="text-sm leading-5 text-gray-900"
+																	x-text="stream.stream_start"></div>
+																<div class="text-sm leading-5 text-gray-500"
+																	x-text="stream.server_name"></div>
+															</td>
+															<td
+																class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+																<div class="flex flex-1 justify-center">
+																	<span
+																		class="inline-flex justify-center px-2 inline-flex text-sm leading-5 font-semibold tracking-widest rounded-full bg-green-100 text-green-800">
+																		<span x-text="stream.listeners"></span>
+																		/
+																		<span x-text="stream.listener_peak"></span>
+																	</span>
+																</div>
+															</td>
+														</tr>
+													</template>
+													<template x-for="stream in streams" :key="stream">
+														<tr
+															class="flex flex-col md:hidden lg:hidden mb-3 border-2 border-gray-300">
+															<span class="flex flex-col">
+																<th
+																	class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+																	Mountpoint
+																</th>
+																<td
+																	class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+																	<div
+																		class="text-sm leading-5 font-medium text-gray-900">
+																		<a :href="{'stream.listenurl': true}"
+																			class="hover:underline hover:text-gray-700"
+																			target="_blank"
+																			x-text="stream.listenurl"></a>
+																		<svg class="h-4 w-4" fill="none"
+																			stroke-linecap="round"
+																			stroke-linejoin="round" stroke-width="2"
+																			stroke="currentColor" viewBox="0 0 24 24">
+																			<path
+																				d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+																			</path>
+																		</svg>
+																	</div>
+																	<div class="text-xs leading-5 font-light text-gray-500"
+																		x-text="stream.audio_info"></div>
+																</td>
+															</span>
+															<span class="flex flex-col">
+																<th
+																	class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+																	Info
+																</th>
+																<td
+																	class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+																	<div class="text-sm leading-5 text-gray-900"
+																		x-text="stream.stream_start"></div>
+																	<div class="text-sm leading-5 text-gray-500"
+																		x-text="stream.server_name"></div>
+																</td>
+															</span>
+															<span class="flex flex-col">
+																<th
+																	class="px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+																	Listeners <small
+																		class="text-gray-500 text-xs tracking-widest">(current/peak)</small>
+																</th>
+																<td
+																	class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+																	<div class="flex flex-1 justify-center">
+																		<span
+																			class="inline-flex justify-center px-2 inline-flex text-sm leading-5 font-semibold tracking-widest rounded-full bg-green-100 text-green-800">
+																			<span x-text="stream.listeners"></span>
+																			/
+																			<span x-text="stream.listener_peak"></span>
+																		</span>
+																	</div>
+																</td>
+															</span>
+														</tr>
+													</template>
+												</template>
+											</tbody>
+										</table>
+									</div>
+								</template>
+
+								<!--  show a now streams notification and help tips thing-->
+								<template x-if="!url" id="template_alternate_help">
+									<div class="flex justify-center">
+										<div
+											class="flex flex-grow flex-col p-6 w-full md:max-w-2xl bg-gray-100 shadow-md rounded">
+											<div class="inline-flex justify-center">
+												<h2 class="text-3xl text-gray-800 font-bold">You have some settings to finish</h2>
+											</div>
+											<div class="inline-flex justify-center">
+												<img class="max-w-xs h-64  px-2 md:p-0"
+													src="./undraw_empty_street_sfxm.svg" alt="" srcset="">
+											</div>
+											<div class="text-gray-700">
+												<p class="p-1 mb-3"><span>You Will Need to Set your URL for the server
+														json to fetch</span></p>
+												<div class="flex justify-center">
+													<span
+														class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
+														<button @click="open_settings = true" type="button"
+															class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+															Open Settings
+														</button>
+													</span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</template>
+
+								<template x-if="!streams">
+									<div class="flex items-center justify-center">
+										<div class="flex flex-col items-center justify-center max-w-md w-full p-6 bg-white rounded-md shadow-md">
+											<div>
+												<h3 class="font-semibold text-gray-800 text-xl">Loading The Initial Stream Data</h3>
+											</div>
+											<div>
+												<svg class="rotate-center z-0 h-10 w-10 text-gray-900" fill="none" stroke-linecap="round"
+													stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+													stroke="currentColor">
+													<path
+														d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+													</path>
+												</svg>
+											</div>
+										</div>
+									</div>
+								</template>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- /End replace -->
+			</div>
+		</main>
+		<footer>
+			<div class="text-gray-700 block px-5 py-8 mx-auto flex items-center sm:flex-row flex-col">
+				<a class="flex title-font font-medium items-center md:justify-start justify-center text-gray-900">
+					<!-- <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-10 h-10 text-white p-2 bg-blue-500 rounded-full" viewBox="0 0 24 24">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg> -->
+					<span class="ml-3 text-xl">icecast-status</span>
+				</a>
+				<p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">©
+					2020 ReeceM —
+					<a href="https://twitter.com/iexistin3d" class="text-gray-600 ml-1" rel="noopener noreferrer"
+						target="_blank">@iexistin3d</a>
+				</p>
+				<span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
+					<a class="text-gray-500 hover:text-gray-700 cursor-pointer"
+						href="https://github.com/reecem/icecast-status">
+						<svg class="fill-current w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+							<title>GitHub</title>
+							<path
+								d="M10 0a10 10 0 0 0-3.16 19.49c.5.1.68-.22.68-.48l-.01-1.7c-2.78.6-3.37-1.34-3.37-1.34-.46-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.1.39-1.99 1.03-2.69a3.6 3.6 0 0 1 .1-2.64s.84-.27 2.75 1.02a9.58 9.58 0 0 1 5 0c1.91-1.3 2.75-1.02 2.75-1.02.55 1.37.2 2.4.1 2.64.64.7 1.03 1.6 1.03 2.69 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85l-.01 2.75c0 .26.18.58.69.48A10 10 0 0 0 10 0">
+							</path>
+						</svg>
+					</a>
+					<a class="ml-3 text-gray-500 hover:text-gray-700 cursor-pointer">
+						<svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+							class="w-5 h-5" viewBox="0 0 24 24">
+							<path
+								d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
+							</path>
+						</svg>
+					</a>
+					<!-- <a class="ml-3 text-gray-500 hover:text-gray-700">
+						<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+							stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+							<rect width="20" height="20" x="2" y="2" rx="5" ry="5"></rect>
+							<path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01"></path>
+						</svg>
+					</a> -->
+				</span>
+			</div>
+		</footer>
+
+		<!-- <div x-data="{ open: false }" x-init="$watch('open', value => console.log(value))">
+			<button @click="open = ! open">Toggle Open</button>
+		</div> -->
+		<div x-cloak x-show="open_settings" x-description="Settings modal for the stream checking configurations"
+			class="fixed bottom-0 inset-x-0 px-4 pb-4 sm:inset-0 sm:flex sm:items-center sm:justify-center">
+			<div x-show="open_settings" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0"
+				x-transition:enter-end="opacity-100" x-transition:leave="ease-in duration-200"
+				x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+				class="fixed inset-0 transition-opacity">
+				<div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+			</div>
+
+			<div x-show="open_settings" x-transition:enter="ease-out duration-300"
+				x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave="ease-in duration-200"
+				x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+				x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+				class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full"
+				role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+				<div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+					<div class="sm:flex sm:items-start">
+						<div
+							class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100 sm:mx-0 sm:h-10 sm:w-10">
+							<svg class="h-6 w-6 text-green-600" fill="none" stroke-linecap="round"
+								stroke-linejoin="round" stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+								<path
+									d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
+								</path>
+							</svg>
+						</div>
+						<div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+							<h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-headline">
+								Server Settings
+							</h3>
+							<div class="mt-2">
+								<p class="text-sm leading-5 text-gray-500">
+									Configure these settings for your server to be able to call the status-json.xsl
+									from the icecast server
+								</p>
+							</div>
+							<div class="mt-3 border-t-2 border-gray-100">
+								<div class="pt-3 h-64 md:min-h-full inline-block w-full overflow-y-scroll p-1">
+									<div>
+										<label for="url" class="block text-sm leading-5 text-gray-700">URL</label>
+										<div class="mt-1 relative rounded-md shadow-sm">
+											<div
+												class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+												<span class="text-gray-500 sm:text-sm sm:leading-5">
+													<svg class="h-4 w-4" fill="none" stroke-linecap="round"
+														stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24"
+														stroke="currentColor">
+														<path
+															d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1">
+														</path>
+													</svg>
+												</span>
+											</div>
+											<input id="url" name="url" x-model="newUrl"
+												class="form-input block w-full pl-7 pr-3 sm:text-sm sm:leading-5"
+												:placeholder="url" />
+										</div>
+									</div>
+									<!-- onlineCheckInterval -->
+									<div id="onlineCheckInterval" class="mt-3">
+										<label for="url" class="block text-sm leading-5 text-gray-700">Online Check
+											Interval</label>
+										<div class="mt-1 relative rounded-md shadow-sm">
+											<input id="onlineCheckInterval" name="onlineCheckInterval"
+												x-model="onlineCheckInterval"
+												class="form-input block w-full pr-2 sm:text-sm sm:leading-5" type="text"
+												:placeholder="onlineCheckInterval / 1000" />
+											<div class="absolute inset-y-0 right-0 flex items-center">
+												<span
+													class="py-0 pl-2 pr-4 border-transparent bg-transparent text-gray-500 sm:text-sm sm:leading-5">
+													sec
+												</span>
+											</div>
+										</div>
+										<span class="block text-xs text-gray-400">How often a request is performed when
+											streams are <strong class="font-semibold">on</strong></span>
+									</div>
+									<!-- offlineCheckInterval -->
+									<div id="offlineCheckInterval" class="mt-3">
+										<label for="url" class="block text-sm leading-5 text-gray-700">Offline Check
+											Interval</label>
+										<div class="mt-1 relative rounded-md shadow-sm">
+											<input id="offlineCheckInterval" name="offlineCheckInterval"
+												x-model="offlineCheckInterval"
+												class="form-input block w-full pr-2 sm:text-sm sm:leading-5" type="text"
+												:placeholder="offlineCheckInterval / 1000" />
+											<div class="absolute inset-y-0 right-0 flex items-center">
+												<span
+													class="py-0 pl-2 pr-4 border-transparent bg-transparent text-gray-500 sm:text-sm sm:leading-5">
+													sec
+												</span>
+											</div>
+										</div>
+										<span class="block text-xs text-gray-400">How often a request is performed when
+											streams are <strong class="font-semibold">off</strong></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+					<span class="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
+						<button @click="saveSettings()" type="button"
+							class="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-blue-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-blue-500 focus:outline-none focus:border-blue-700 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+							Save
+						</button>
+					</span>
+					<span class="mt-3 flex w-full rounded-md shadow-sm sm:mt-0 sm:w-auto">
+						<button @click="open_settings = false;" type="button"
+							class="inline-flex justify-center w-full rounded-md border border-gray-300 px-4 py-2 bg-white text-base leading-6 font-medium text-gray-700 shadow-sm hover:text-gray-500 focus:outline-none focus:border-blue-300 focus:shadow-outline-blue transition ease-in-out duration-150 sm:text-sm sm:leading-5">
+							Cancel
+						</button>
+					</span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="./dist/app.min.js"></script>
+</body>
+
+</html>
