@@ -1,5 +1,16 @@
-// "!loading ? 'Refresh' : 'Refreshing ...'"
+/**
+ * icecast-status checker.
+ *
+ * Checks the status json from an icecast server and displays it pretty like
+ * System auto refreshes and remembers the settings.
+ *
+ * @see https://github.com/reecem/icecast-status
+ * @copyright 2020 ReeceM
+ */
+
 import { init, setStorage } from './components/store'
+import 'alpinejs'
+const axios = require('axios').default;
 
 window.headerTimer = () => {
 	return {
