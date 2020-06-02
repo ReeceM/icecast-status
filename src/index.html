@@ -27,9 +27,12 @@
 		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
 	<meta property="twitter:image" content="undraw_video_streaming_yyld.png">
 
-	<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.0.1/dist/alpine.js" defer></script>
-	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 	<link rel="stylesheet" href="./dist/app.min.css">
+	<style>
+		[x-cloak] {
+		   display: none !important;
+	   }
+   </style>
 </head>
 
 <body>
@@ -93,7 +96,7 @@
 					</div>
 				</div>
 			</div>
-			<div :class="{'block': mobileMenu, 'hidden': !mobileMenu}" @click.away="mobileMenu = false">
+			<div x-cloak :class="{'block': mobileMenu, 'hidden': !mobileMenu}" @click.away="mobileMenu = false">
 				<div class="px-2 pt-2 pb-3 sm:px-3"> <a href="#"
 						class="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-900 focus:outline-none focus:text-white focus:bg-blue-700">Stream
 						Status</a>
@@ -179,7 +182,7 @@
 						<div class="inline-flex">
 							<button @click="refresh()"
 								class="flex p-2 text-gray-900 bg-green-300 m-auto rounded-full hover:shadow-md active:bg-green-400 active:text-white">
-								<svg class="h-5 w-5" :class="{'text-gray-800' : !loading, 'rotate-center': loading}" fill="none"
+								<svg class="h-5 w-5" :class="{'' : !loading, 'rotate-center': loading}" fill="none"
 									stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 									stroke="currentColor" viewBox="0 0 24 24">
 									<path
