@@ -6,6 +6,7 @@
  *
  * @see https://github.com/reecem/icecast-status
  * @copyright 2020 ReeceM
+ * @version 0.2.1
  */
 
 import { init as settingsInit, setStorage } from './components/store'
@@ -42,22 +43,25 @@ window.streamStats = () => {
 		refreshedAt: null,
 		refreshesAt: null,
 		icecast: {},
-		previousState: false,
+		previousState: 'offline',
 		loading: false,
 		saveSettings() {
-			this.url = this.newUrl;
+			if (this.newUrl != null) {
+				this.url = this.newUrl;
+			}
 			this.currentInterval = this.onlineCheckInterval;
 			setStorage(this);
 			this.open_settings = false;
+			this.start = false;
 			this.refresh()
 			this.loadSettings();
 		},
 		refresh() {
-			clearInterval(this.interval)
 			this.collect()
 		},
 		collect() {
 			if (this.loading == true) {
+				console.info('Currently loading');
 				return;
 			}
 			console.info('[%s] Collecting', (new Date()).toLocaleTimeString());
@@ -75,28 +79,21 @@ window.streamStats = () => {
 					if (icestats.hasOwnProperty('dummy')) {
 						this.streams = []
 
-
-						if (this.previousState != icestats.dummy) {
-							console.info('Changing the timing')
-							this.previousState = null;
-							clearInterval(this.interval)
-							this.currentInterval = this.offlineCheckInterval
-							this.interval = setInterval(this.collect(), this.currentInterval * 1000)
+						if (this.previousState == 'online') {
+							this.previousState = 'offline';
+							this.setInterval(this.offlineCheckInterval)
 						}
 
 						document.title = `${document.querySelector('title').dataset.original} Offline`;
 					}
 
 					if (icestats.hasOwnProperty('source')) {
-						console.info('has stats');
 
 						this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
 
-						if (this.previousState == null) {
-							this.previousState = true;
-							clearInterval(this.interval)
-							this.currentInterval = this.onlineCheckInterval
-							this.interval = setInterval(this.collect(), this.currentInterval * 1000)
+						if (this.previousState == 'offline') {
+							this.previousState = 'online';
+							this.setInterval(this.onlineCheckInterval)
 						}
 
 						document.title = `${document.querySelector('title').dataset.original} ${this.streams.length } Online`;
@@ -111,11 +108,16 @@ window.streamStats = () => {
 						console.log('Request canceled', e.message);
 					} else {
 						alert(e);
-						clearInterval(this.interval)
-						this.currentInterval = this.offlineCheckInterval
+						this.setInterval(this.offlineCheckInterval)
 						throw e;
 					}
 				});
+		},
+		setInterval(interval) {
+			// console.debug('setting timer to %s s', interval);
+			this.currentInterval = interval;
+			clearInterval(this.interval)
+			this.interval = setInterval(() => {this.collect()}, this.currentInterval * 1000)
 		},
 		setDates() {
 			let now = new Date();
@@ -137,11 +139,9 @@ window.streamStats = () => {
 		init() {
 			this.loadSettings()
 
-
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.start = false;
 				this.collect()
-				// this.interval = setInterval(this.collect(), this.currentInterval * 1000)
 				console.log('starting up');
 			} else {
 				this.start = true;

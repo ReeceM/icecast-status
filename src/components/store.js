@@ -1,9 +1,12 @@
 /**
  * Local storage system to keep the urls for the servers to check
  *
+ * @see https://github.com/reecem/icecast-status
+ * @copyright 2020 ReeceM
+ * @version 0.2.1
  */
 let instanceSettings = {
-	version: '0.1.1',
+	version: '0.2.1',
 	onlineCheckInterval: 30,
 	offlineCheckInterval: 60,
 	currentInterval: 10,
@@ -28,6 +31,8 @@ export function init() {
 	if (instanceSettings.version === currentStore.version) {
 		Object.assign(instanceSettings, currentStore);
 	} else {
+		/** Load the old URL so we don't have to keep entering it */
+		instanceSettings.url = currentStore.url;
 		setStorage(instanceSettings);
 		init()
 		return;
