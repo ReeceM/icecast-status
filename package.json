@@ -1,10 +1,10 @@
 {
     "name": "icecast-status",
-    "version": "0.1.1",
+    "version": "0.2.0",
     "description": "checks the status of an icecast server",
     "main": "public/main.js",
     "scripts": {
-        "dev": "cross-env NODE_ENV=development webpack --mode development --config webpack.config.js",
+        "dev": "cross-env NODE_ENV=development webpack --mode development --config webpack.config.js; npm run cp-html",
         "tailwind-start": "tailwind build src/app.css -o public/dist/app.css",
         "tailwind-build": "postcss src/app.css --output public/dist/app.min.css --env production",
         "cp-html": "cp src/index.html public/",
