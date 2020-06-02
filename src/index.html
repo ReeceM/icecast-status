@@ -4,10 +4,9 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Stream Status</title>
+	<title data-original="Stream Status">IceCast Stream Status</title>
 	<!-- Primary Meta Tags -->
-	<title>IceCast Stream Status.</title>
-	<meta name="title" content="IceCast Stream Status.">
+	<meta name="title" content="IceCast Stream Status">
 	<meta name="description"
 		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
 
@@ -35,8 +34,8 @@
    </style>
 </head>
 
-<body>
-	<div class="bg-gray-50" x-data="streamStats()" x-init="init()">
+<body class="bg-gray-50 block h-screen" >
+	<div x-data="streamStats()" x-init="init()">
 		<nav @keydown.window.escape="mobileMenu = false" class="bg-blue-800">
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex items-center justify-between h-16">
@@ -175,7 +174,7 @@
 			</div>
 		</header>
 
-		<main class="">
+		<main>
 			<div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
 				<template x-if="streams != null" id="actions_bar_template">
 					<div class="flex w-full px-6 justify-between my-1 py-1">
@@ -279,7 +278,7 @@
 															</td>
 														</tr>
 													</template>
-													<template x-for="stream in streams" :key="stream">
+													<template x-for="stream in streams" :key="stream" x-description="Mobile Table Template">
 														<tr
 															class="flex flex-col md:hidden lg:hidden mb-3 border-2 border-gray-300">
 															<span class="flex flex-col">
