@@ -8,12 +8,7 @@
 
  @import "tailwindcss/utilities";
 
- [x-cloak] {
-	 display: hidden;
- }
-
  .rotate-center {
-	 z-index: -1;
 	 -webkit-animation: rotate-center 0.7s ease-in-out infinite alternate both;
 			 animation: rotate-center 0.7s ease-in-out infinite alternate both;
  }
