@@ -50,10 +50,9 @@ export function getStorage(_default) {
 export function setStorage(data) {
 	if (hasLocalStorage()) {
 		try {
-			console.log(data)
 			for (const setting in data) {
 				if (data.hasOwnProperty(setting) && instanceSettings.hasOwnProperty(setting)) {
-					console.log('Setting %s to %s', setting, data[setting]);
+					process.env.NODE_ENV == 'development' ? console.debug('Setting %s to %s', setting, data[setting]) : '';
 					instanceSettings[setting] = data[setting];
 				}
 			}
@@ -61,7 +60,6 @@ export function setStorage(data) {
 			return localStorage.setItem(storageKey, JSON.stringify(instanceSettings));
 		} catch (error) {
 			console.error(error)
-			alert(error);
 		}
 	}
 }
