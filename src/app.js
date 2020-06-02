@@ -11,6 +11,8 @@
 import { init, setStorage } from './components/store'
 import 'alpinejs'
 const axios = require('axios').default;
+const CancelToken = axios.CancelToken;
+const source = CancelToken.source();
 
 window.headerTimer = () => {
 	return {
@@ -49,24 +51,20 @@ window.streamStats = () => {
 		},
         refresh() {
             clearInterval(this.interval)
-            this.collect()
-            setTimeout(() => {
-                this.init()
-            }, 2000);
+			this.init()
+            // setTimeout(() => {
+            // }, 2000);
         },
         collect() {
 			this.loading = true;
 
-            axios.get(this.url)
+            axios.get(this.url, { cancelToken: source.token })
                 .then(({
                     data: {
                         icestats
                     }
                 }) => {
-                    this.loading = false;
-
-
-                    console.warn('Dummy %s', icestats.dummy)
+					this.loading = false;
 
                     if (icestats.dummy == null) {
                         this.streams = []
@@ -74,7 +72,7 @@ window.streamStats = () => {
 						this.icecast = icestats;
 
                         if (this.previousState != icestats.dummy) {
-                            console.log('Changing the timing')
+                            console.info('Changing the timing')
                             this.previousState = null;
                             clearInterval(this.interval)
                             this.currentInterval = this.offlineCheckInterval
@@ -83,7 +81,7 @@ window.streamStats = () => {
                     }
 
                     if (icestats.source != undefined) {
-                        console.log('has stats');
+                        console.info('has stats');
                         this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
                         if (this.previousState == null) {
                             this.previousState = true;
@@ -94,10 +92,18 @@ window.streamStats = () => {
 
                     this.setDates()
                 })
-                .catch(e => {
-                    alert(e);
-                    this.loading = false;
-                    throw e;
+				.catch(e => {
+					this.loading = false;
+
+					if (axios.isCancel(e)) {
+						console.log('Request canceled', e.message);
+					} else {
+						alert(e);
+						clearInterval(this.interval)
+						this.currentInterval = this.offlineCheckInterval
+						this.init()
+						throw e;
+					}
                 });
         },
         interval: 0,
@@ -108,27 +114,26 @@ window.streamStats = () => {
             this.refreshesAt = now.toLocaleTimeString();
         },
 		init() {
-			var settings = init();
-
-			for (const setting in settings) {
-				if (settings.hasOwnProperty(setting) && this.hasOwnProperty(setting)) {
-					this[setting] = settings[setting];
-				}
-			}
-
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.start = false;
 				this.collect();
+				console.log('interval %s', this.currentInterval * 1000);
 				this.interval = setInterval(() => {
 					if (this.loading == true) {
 						return;
 					}
-					console.log('[%s] Collecting', (new Date()).toLocaleTimeString());
+					console.info('[%s] Collecting', (new Date()).toLocaleTimeString());
 					this.collect()
 				}, this.currentInterval * 1000)
 			} else {
 				this.start = true;
 			}
+
+			window.addEventListener('beforeunload', () => {
+				console.info('Disconnection all the things. XD');
+				clearInterval(this.interval);
+				source.cancel('Webpage offloading');
+			})
         }
     }
 }
