@@ -42,7 +42,7 @@ window.streamStats = () => {
 		refreshedAt: null,
 		refreshesAt: null,
 		icecast: {},
-		previousState: [],
+		previousState: false,
 		loading: false,
 		saveSettings() {
 			this.url = this.newUrl;
@@ -53,10 +53,8 @@ window.streamStats = () => {
 			this.loadSettings();
 		},
 		refresh() {
-			this.currentInterval = 2;
 			clearInterval(this.interval)
-			this.interval = setInterval(this.collect(), this.currentInterval * 1000)
-			this.currentInterval = this.onlineCheckInterval;
+			this.collect()
 		},
 		collect() {
 			if (this.loading == true) {
@@ -72,10 +70,11 @@ window.streamStats = () => {
 				}) => {
 					this.loading = false;
 
-					if (icestats.dummy == null) {
+					this.icecast = icestats;
+
+					if (icestats.hasOwnProperty('dummy')) {
 						this.streams = []
 
-						this.icecast = icestats;
 
 						if (this.previousState != icestats.dummy) {
 							console.info('Changing the timing')
@@ -84,16 +83,23 @@ window.streamStats = () => {
 							this.currentInterval = this.offlineCheckInterval
 							this.interval = setInterval(this.collect(), this.currentInterval * 1000)
 						}
+
+						document.title = `${document.querySelector('title').dataset.original} Offline`;
 					}
 
-					if (icestats.source != undefined) {
+					if (icestats.hasOwnProperty('source')) {
 						console.info('has stats');
+
 						this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
+
 						if (this.previousState == null) {
 							this.previousState = true;
+							clearInterval(this.interval)
 							this.currentInterval = this.onlineCheckInterval
 							this.interval = setInterval(this.collect(), this.currentInterval * 1000)
 						}
+
+						document.title = `${document.querySelector('title').dataset.original} ${this.streams.length } Online`;
 					}
 
 					this.setDates()
