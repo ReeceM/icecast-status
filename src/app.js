@@ -8,7 +8,7 @@
  * @copyright 2020 ReeceM
  */
 
-import { init, setStorage } from './components/store'
+import { init as settingsInit, setStorage } from './components/store'
 import 'alpinejs'
 const axios = require('axios').default;
 const CancelToken = axios.CancelToken;
@@ -16,13 +16,13 @@ const source = CancelToken.source();
 
 window.headerTimer = () => {
 	return {
-        currentTime: (new Date()).toLocaleTimeString(),
-        init() {
-            setInterval(() => {
-                this.currentTime = (new Date()).toLocaleTimeString();
-            }, 1000)
-        }
-    }
+		currentTime: (new Date()).toLocaleTimeString(),
+		init() {
+			setInterval(() => {
+				this.currentTime = (new Date()).toLocaleTimeString();
+			}, 1000)
+		}
+	}
 }
 
 window.streamStats = () => {
@@ -35,63 +35,69 @@ window.streamStats = () => {
 		showDetails: false,
 		mobileMenu: false,
 		expand_server_details: false,
-        onlineCheckInterval: 30,
-        offlineCheckInterval: 60,
-        currentInterval: 10,
-        refreshedAt: null,
+		onlineCheckInterval: 30,
+		offlineCheckInterval: 60,
+		currentInterval: 10,
+		interval: 0,
+		refreshedAt: null,
 		refreshesAt: null,
 		icecast: {},
-        previousState: [],
+		previousState: [],
 		loading: false,
 		saveSettings() {
 			this.url = this.newUrl;
+			this.currentInterval = this.onlineCheckInterval;
 			setStorage(this);
 			this.open_settings = false;
 			this.refresh()
+			this.loadSettings();
 		},
-        refresh() {
-            clearInterval(this.interval)
-			this.init()
-            // setTimeout(() => {
-            // }, 2000);
-        },
-        collect() {
+		refresh() {
+			this.currentInterval = 2;
+			clearInterval(this.interval)
+			this.interval = setInterval(this.collect(), this.currentInterval * 1000)
+			this.currentInterval = this.onlineCheckInterval;
+		},
+		collect() {
+			if (this.loading == true) {
+				return;
+			}
+			console.info('[%s] Collecting', (new Date()).toLocaleTimeString());
 			this.loading = true;
-
-            axios.get(this.url, { cancelToken: source.token })
-                .then(({
-                    data: {
-                        icestats
-                    }
-                }) => {
+			axios.get(this.url, { cancelToken: source.token })
+				.then(({
+					data: {
+						icestats
+					}
+				}) => {
 					this.loading = false;
 
-                    if (icestats.dummy == null) {
-                        this.streams = []
+					if (icestats.dummy == null) {
+						this.streams = []
 
 						this.icecast = icestats;
 
-                        if (this.previousState != icestats.dummy) {
-                            console.info('Changing the timing')
-                            this.previousState = null;
-                            clearInterval(this.interval)
-                            this.currentInterval = this.offlineCheckInterval
-                            this.init()
-                        }
-                    }
+						if (this.previousState != icestats.dummy) {
+							console.info('Changing the timing')
+							this.previousState = null;
+							clearInterval(this.interval)
+							this.currentInterval = this.offlineCheckInterval
+							this.interval = setInterval(this.collect(), this.currentInterval * 1000)
+						}
+					}
 
-                    if (icestats.source != undefined) {
-                        console.info('has stats');
-                        this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
-                        if (this.previousState == null) {
-                            this.previousState = true;
-                            this.currentInterval = this.onlineCheckInterval
-                            this.init()
-                        }
-                    }
+					if (icestats.source != undefined) {
+						console.info('has stats');
+						this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
+						if (this.previousState == null) {
+							this.previousState = true;
+							this.currentInterval = this.onlineCheckInterval
+							this.interval = setInterval(this.collect(), this.currentInterval * 1000)
+						}
+					}
 
-                    this.setDates()
-                })
+					this.setDates()
+				})
 				.catch(e => {
 					this.loading = false;
 
@@ -101,30 +107,36 @@ window.streamStats = () => {
 						alert(e);
 						clearInterval(this.interval)
 						this.currentInterval = this.offlineCheckInterval
-						this.init()
 						throw e;
 					}
-                });
-        },
-        interval: 0,
-        setDates() {
-            let now = new Date();
-            this.refreshedAt = now.toLocaleTimeString();
-            now.setSeconds(now.getSeconds() + (this.currentInterval));
-            this.refreshesAt = now.toLocaleTimeString();
-        },
+				});
+		},
+		setDates() {
+			let now = new Date();
+			this.refreshedAt = now.toLocaleTimeString();
+			now.setSeconds(now.getSeconds() + this.currentInterval);
+			this.refreshesAt = now.toLocaleTimeString();
+		},
+		loadSettings() {
+			var settings = settingsInit();
+
+			for (const setting in settings) {
+				if (settings.hasOwnProperty(setting) && this.hasOwnProperty(setting)) {
+					this[setting] = settings[setting];
+				}
+			}
+
+			this.currentInterval = this.onlineCheckInterval;
+		},
 		init() {
+			this.loadSettings()
+
+
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.start = false;
-				this.collect();
-				console.log('interval %s', this.currentInterval * 1000);
-				this.interval = setInterval(() => {
-					if (this.loading == true) {
-						return;
-					}
-					console.info('[%s] Collecting', (new Date()).toLocaleTimeString());
-					this.collect()
-				}, this.currentInterval * 1000)
+				this.collect()
+				// this.interval = setInterval(this.collect(), this.currentInterval * 1000)
+				console.log('starting up');
 			} else {
 				this.start = true;
 			}
@@ -134,6 +146,6 @@ window.streamStats = () => {
 				clearInterval(this.interval);
 				source.cancel('Webpage offloading');
 			})
-        }
-    }
+		}
+	}
 }
