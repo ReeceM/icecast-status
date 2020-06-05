@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "cross-env NODE_ENV=development webpack --mode development --config webpack.config.js; npm run cp-html",
         "tailwind-start": "tailwind build src/app.css -o public/dist/app.css",
-        "tailwind-build": "postcss src/app.css --output public/dist/app.min.css --env production",
+        "tailwind-build": "postcss src/app.css --output public/dist/app.css --env production",
         "cp-html": "cp src/index.html public/; cp src/worker.js public/dist/clock-worker.js",
         "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
         "production": "npm run build; npm run tailwind-build; npm run cp-html",

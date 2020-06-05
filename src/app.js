@@ -58,11 +58,11 @@ window.streamStats = () => {
 				? this.newUrl
 				: this.url;
 
-			this.onlineCheckInterval = this.newOnlineCheckInterval != this.onlineCheckInterval
+			this.onlineCheckInterval = parseInt(this.newOnlineCheckInterval) != this.onlineCheckInterval
 				? parseInt(this.newOnlineCheckInterval)
 				: this.onlineCheckInterval;
 
-			this.offlineCheckInterval = this.newOfflineCheckInterval != this.offlineCheckInterval
+			this.offlineCheckInterval = parseInt(this.newOfflineCheckInterval) != this.offlineCheckInterval
 				? parseInt(this.newOfflineCheckInterval)
 				: this.offlineCheckInterval;
 

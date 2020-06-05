@@ -4,7 +4,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 module.exports = {
     entry: {
         'app': './src/app.js',
-        'app.min': './src/app.js',
     },
     output: {
         path: path.resolve(__dirname, "public/dist"),
@@ -37,7 +36,7 @@ module.exports = {
                     },
                 },
                 extractComments: false,
-                include: /\.min\.js$/,
+                include: /\.js$/,
                 sourceMap: false,
             }
         )],
