@@ -10,19 +10,24 @@
  */
 
 import { init as settingsInit, setStorage } from './components/store'
+import { ClockWorks } from './components/clockWorks'
 import 'alpinejs'
+
 const axios = require('axios').default;
 const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
+const clockWorks = new ClockWorks();
+clockWorks.push({
+	name: 'clock',
+	time: 1000,
+	callback() {
+		document.querySelector('[worker-clock]').__x.$data.currentTime = (new Date()).toLocaleTimeString();
+	}
+});
 
 window.headerTimer = () => {
 	return {
 		currentTime: (new Date()).toLocaleTimeString(),
-		init() {
-			setInterval(() => {
-				this.currentTime = (new Date()).toLocaleTimeString();
-			}, 1000)
-		}
 	}
 }
 
@@ -38,17 +43,29 @@ window.streamStats = () => {
 		expand_server_details: false,
 		onlineCheckInterval: 30,
 		offlineCheckInterval: 60,
+		newOnlineCheckInterval: null,
+		newOfflineCheckInterval: null,
 		currentInterval: 10,
 		interval: 0,
 		refreshedAt: null,
 		refreshesAt: null,
 		icecast: {},
-		previousState: 'offline',
+		currentState: 'online',
 		loading: false,
 		saveSettings() {
-			if (this.newUrl != null) {
-				this.url = this.newUrl;
-			}
+
+			this.url = this.newUrl != null
+				? this.newUrl
+				: this.url;
+
+			this.onlineCheckInterval = this.newOnlineCheckInterval != this.onlineCheckInterval
+				? parseInt(this.newOnlineCheckInterval)
+				: this.onlineCheckInterval;
+
+			this.offlineCheckInterval = this.newOfflineCheckInterval != this.offlineCheckInterval
+				? parseInt(this.newOfflineCheckInterval)
+				: this.offlineCheckInterval;
+
 			this.currentInterval = this.onlineCheckInterval;
 			setStorage(this);
 			this.open_settings = false;
@@ -61,11 +78,13 @@ window.streamStats = () => {
 		},
 		collect() {
 			if (this.loading == true) {
-				console.info('Currently loading');
+				console.warn('Currently loading');
 				return;
 			}
-			console.info('[%s] Collecting', (new Date()).toLocaleTimeString());
+
+			console.debug('[%s] Collecting', (new Date()).toLocaleTimeString());
 			this.loading = true;
+
 			axios.get(this.url, { cancelToken: source.token })
 				.then(({
 					data: {
@@ -76,30 +95,29 @@ window.streamStats = () => {
 
 					this.icecast = icestats;
 
+					var newState = 'offline';
+
 					if (icestats.hasOwnProperty('dummy')) {
 						this.streams = []
-
-						if (this.previousState == 'online') {
-							this.previousState = 'offline';
-							this.setInterval(this.offlineCheckInterval)
-						}
-
 						document.title = `${document.querySelector('title').dataset.original} Offline`;
+						newState = 'offline';
 					}
 
 					if (icestats.hasOwnProperty('source')) {
-
 						this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
-
-						if (this.previousState == 'offline') {
-							this.previousState = 'online';
-							this.setInterval(this.onlineCheckInterval)
-						}
-
-						document.title = `${document.querySelector('title').dataset.original} ${this.streams.length } Online`;
+						document.title = `${document.querySelector('title').dataset.original} ${this.streams.length} Online`;
+						newState = 'online';
 					}
 
-					this.setDates()
+					if (this.currentState == 'online' && newState == 'offline') {
+						this.currentState = 'offline';
+						this.setInterval(this.offlineCheckInterval)
+					} else if (this.currentState == 'offline' && newState == 'online') {
+						this.currentState = 'online';
+						this.setInterval(this.onlineCheckInterval)
+					}
+
+					this.setDates();
 				})
 				.catch(e => {
 					this.loading = false;
@@ -114,15 +132,26 @@ window.streamStats = () => {
 				});
 		},
 		setInterval(interval) {
-			// console.debug('setting timer to %s s', interval);
+			console.debug('setting timer to %s s', interval);
 			this.currentInterval = interval;
-			clearInterval(this.interval)
-			this.interval = setInterval(() => {this.collect()}, this.currentInterval * 1000)
+
+			clockWorks.pull({
+				name: 'refreshTimer',
+			});
+
+			clockWorks.push({
+				name: 'refreshTimer',
+				time: interval * 1000,
+				callback() {
+					console.log('Running');
+					document.querySelector('[worker-main]').__x.$data.collect()
+				}
+			});
 		},
 		setDates() {
 			let now = new Date();
 			this.refreshedAt = now.toLocaleTimeString();
-			now.setSeconds(now.getSeconds() + this.currentInterval);
+			now.setSeconds(now.getSeconds() + parseInt(this.currentInterval));
 			this.refreshesAt = now.toLocaleTimeString();
 		},
 		loadSettings() {
@@ -141,8 +170,7 @@ window.streamStats = () => {
 
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.start = false;
-				this.collect()
-				console.log('starting up');
+				this.collect();
 			} else {
 				this.start = true;
 			}

@@ -35,7 +35,7 @@
 </head>
 
 <body class="bg-gray-50 block h-screen" >
-	<div x-data="streamStats()" x-init="init()">
+	<div x-data="streamStats()" x-init="init()" worker-main>
 		<nav @keydown.window.escape="mobileMenu = false" class="bg-blue-800">
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex items-center justify-between h-16">
@@ -65,6 +65,7 @@
 								class="p-1 border-2 border-transparent text-blue-400 rounded-full hover:text-white focus:outline-none focus:text-white focus:bg-blue-700">
 								<svg class="h-6 w-6" fill="none" stroke-linecap="round" stroke-linejoin="round"
 									stroke-width="2" stroke="currentColor" viewBox="0 0 24 24">
+									<title>Settings</title>
 									<path
 										d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
 									</path>
@@ -119,7 +120,7 @@
 					<h2 class="text-3xl font-bold leading-tight text-gray-900">
 						Stream Status
 					</h2>
-					<h3 x-data="headerTimer()" x-init="init()"
+					<h3 x-data="headerTimer()" worker-clock
 						class="text-sm font-bold leading-tight w-full md:w-28 text-center inline-block text-gray-900 md:order-last"
 						x-text="currentTime"></h3>
 					<div class="mt-2 block md:hidden">
@@ -427,6 +428,7 @@
 					href="https://twitter.com/iexistin3d">
 						<svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
 							class="w-5 h-5" viewBox="0 0 24 24">
+							<title>Twitter</title>
 							<path
 								d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z">
 							</path>
@@ -512,9 +514,9 @@
 											Interval</label>
 										<div class="mt-1 relative rounded-md shadow-sm">
 											<input id="onlineCheckInterval" name="onlineCheckInterval"
-												x-model="onlineCheckInterval"
+												x-model="newOnlineCheckInterval"
 												class="form-input block w-full pr-2 sm:text-sm sm:leading-5" type="text"
-												:placeholder="onlineCheckInterval / 1000" />
+												:placeholder="onlineCheckInterval" />
 											<div class="absolute inset-y-0 right-0 flex items-center">
 												<span
 													class="py-0 pl-2 pr-4 border-transparent bg-transparent text-gray-500 sm:text-sm sm:leading-5">
@@ -531,9 +533,9 @@
 											Interval</label>
 										<div class="mt-1 relative rounded-md shadow-sm">
 											<input id="offlineCheckInterval" name="offlineCheckInterval"
-												x-model="offlineCheckInterval"
+												x-model="newOfflineCheckInterval"
 												class="form-input block w-full pr-2 sm:text-sm sm:leading-5" type="text"
-												:placeholder="offlineCheckInterval / 1000" />
+												:placeholder="offlineCheckInterval" />
 											<div class="absolute inset-y-0 right-0 flex items-center">
 												<span
 													class="py-0 pl-2 pr-4 border-transparent bg-transparent text-gray-500 sm:text-sm sm:leading-5">
