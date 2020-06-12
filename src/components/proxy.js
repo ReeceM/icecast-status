@@ -12,7 +12,5 @@ export function proxy(url, headers = {}) {
 			.catch(error => {
 				reject(error)
 			})
-
-		return response.data;
 	});
 }

@@ -61,15 +61,10 @@ window.streamStats = () => {
 				? this.newUrl
 				: this.url;
 
-			this.onlineCheckInterval = parseInt(this.newOnlineCheckInterval) != this.onlineCheckInterval
-				? parseInt(this.newOnlineCheckInterval)
-				: this.onlineCheckInterval;
-
-			this.offlineCheckInterval = parseInt(this.newOfflineCheckInterval) != this.offlineCheckInterval
-				? parseInt(this.newOfflineCheckInterval)
-				: this.offlineCheckInterval;
-
+			this.onlineCheckInterval = getIntervalSetting(this.newOnlineCheckInterval, this.onlineCheckInterval)
+			this.offlineCheckInterval = getIntervalSetting(this.newOfflineCheckInterval, this.offlineCheckInterval);
 			this.currentInterval = this.onlineCheckInterval;
+
 			setStorage(this);
 			this.open_settings = false;
 			this.start = false;
@@ -138,12 +133,12 @@ window.streamStats = () => {
 
 			let errorHandler = (e) => {
 				this.loading = false;
+
 				if (axios.isCancel(e)) {
 					console.log('Request canceled', e.message);
 				} else {
 					this.errorCount++;
 					alert(e);
-					this.setInterval(this.offlineCheckInterval)
 					throw e;
 				}
 			}
@@ -161,6 +156,10 @@ window.streamStats = () => {
 		setInterval(interval) {
 			console.debug('setting timer to %s s', interval);
 			this.currentInterval = interval;
+
+			if (interval <= 1000) {
+				interval = 10000;
+			}
 
 			clockWorks.pull({
 				name: 'refreshTimer',
@@ -186,7 +185,9 @@ window.streamStats = () => {
 
 			for (const setting in settings) {
 				if (settings.hasOwnProperty(setting) && this.hasOwnProperty(setting)) {
-					this[setting] = settings[setting];
+					this[setting] = settings[setting] != null
+						? settings[setting]
+						: this[setting];
 				}
 			}
 
@@ -209,4 +210,19 @@ window.streamStats = () => {
 			})
 		}
 	}
+}
+
+/**
+ * Get the new interval time frame
+ *
+ * @param {any} newTime
+ * @param {Number} oldTime
+ */
+function getIntervalSetting(newTime, oldTime) {
+	if (!parseInt(newTime)) {
+		return oldTime;
+	}
+	return (parseInt(newTime) != oldTime)
+		? parseInt(newTime)
+		: oldTime;
 }

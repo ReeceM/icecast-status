@@ -2,6 +2,11 @@
 
 All notable changes to `icecast-status` will be documented in this file.
 
+## 0.4.1 - 2020-06-12
+## Fixed
+- The settings would all go to null/NaN when just clicking save sometimes
+- undefined value in proxy file
+
 ## 0.4.0 - 2020-06-12
 ## Changed
 - Made the proxy call and default axios call split and use the same response handlers
