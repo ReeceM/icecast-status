@@ -194,7 +194,7 @@ window.streamStats = () => {
 		},
 		init() {
 			this.loadSettings()
-			console.log(this)
+
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.start = false;
 				this.collect();
