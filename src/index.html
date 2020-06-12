@@ -16,7 +16,7 @@
 	<meta property="og:title" content="IceCast Stream Status.">
 	<meta property="og:description"
 		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
-	<meta property="og:image" content="undraw_video_streaming_yyld.png">
+	<meta property="og:image" content="social.png">
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image">
@@ -24,7 +24,7 @@
 	<meta property="twitter:title" content="IceCast Stream Status.">
 	<meta property="twitter:description"
 		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
-	<meta property="twitter:image" content="undraw_video_streaming_yyld.png">
+	<meta property="twitter:image" content="social.png">
 
 	<link rel="stylesheet" href="./dist/app.css">
 	<style>
@@ -234,7 +234,7 @@
 												</tr>
 											</thead>
 											<tbody class="bg-transparent md:bg-white">
-												<template x-if="streams != null" id="table_body_template">
+												<template x-if="streams != null && streams.length >= 1" id="table_body_template">
 													<template x-for="stream in streams" :key="stream">
 														<tr class="flex flex-col mb-3 border border-gray-200 md:border-none md:table-row md:mb-0 bg-white shadow md:shadow-none md:bg-transparent">
 															<th
@@ -295,6 +295,18 @@
 												</template>
 											</tbody>
 										</table>
+
+										<template x-if="streams.length == 0">
+											<div class="flex flex-1 items-center flex-col min-w-full bg-white p-4">
+												<div>
+													<img class="max-w-xs h-64 px-2 md:p-0" src="./undraw_no_data_qbuo.svg" alt="" srcset="">
+												</div>
+												<div class="inline-grid grid-rows-2 items-center text-center">
+													<h3 class="text-2xl mb-1 text-gray-800 font-semibold tracking-wide">No Streams Online</h3>
+													<span class="text-sm text-gray-500">There was no stream data that could be retrieved, system will refresh occasionally to check</span>
+												</div>
+											</div>
+										</template>
 									</div>
 								</template>
 
@@ -302,7 +314,7 @@
 								<template x-if="start" id="template_alternate_help">
 									<div class="flex justify-center">
 										<div
-											class="flex flex-grow flex-col p-6 w-full md:max-w-2xl bg-gray-100 shadow-md rounded">
+											class="flex flex-grow flex-col p-6 w-full md:max-w-2xl bg-white shadow-md rounded">
 											<div class="inline-flex justify-center">
 												<h2 class="text-3xl text-gray-800 font-bold">You have some settings to finish</h2>
 											</div>
