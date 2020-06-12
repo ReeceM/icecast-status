@@ -2,24 +2,36 @@ const axios = require('axios');
 
 export async function handler(event, context) {
 	console.log(event);
-
-	return {
-		statusCode: 200,
-		body: JSON.stringify({hello: "World"})
+	// Only allow POST
+	if (event.httpMethod !== "POST") {
+		return { statusCode: 405, body: "Function not found..." };
 	}
-	// try {
-	// 	let decoded = JSON.parse(event.body);
-	// 	let requestedUrl = decoded.source;
-	// 	const response = await axios.get(requestedUrl);
 
-	// 	return {
-	// 		statusCode: 200,
-	// 		body: JSON.stringify(response.json())
-	// 	}
-	// } catch (error) {
-	// 	return {
-	// 		statusCode: error.statusCode,
-	// 		body: JSON.stringify(error)
-	// 	}
-	// }
+	let decoded = JSON.parse(event.body);
+	let requestedUrl = decoded.source;
+
+	if (!requestedUrl) {
+		return { statusCode: 402, body: "Missing Parameters" };
+	}
+
+	try {
+		const response = await axios.get(requestedUrl);
+
+		console.log('Axios Response');
+		console.log(response);
+		console.log('--------------------');
+
+		const icestats = response.data || {};
+
+		return {
+			statusCode: 200,
+			body: JSON.stringify(icestats)
+		}
+
+	} catch (error) {
+		return {
+			statusCode: 500,
+			body: JSON.stringify({error: error})
+		}
+	}
 }
