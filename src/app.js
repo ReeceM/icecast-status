@@ -11,6 +11,7 @@
 
 import { init as settingsInit, setStorage } from './components/store'
 import { ClockWorks } from './components/clockWorks'
+import { proxy } from './components/proxy';
 import 'alpinejs'
 
 window.axios = require('axios').default;
@@ -52,7 +53,7 @@ window.streamStats = () => {
 		refreshesAt: null,
 		icecast: {},
 		errorCount: 0,
-		currentState: 'online',
+		currentState: 'initial',
 		loading: false,
 		saveSettings() {
 
@@ -75,6 +76,9 @@ window.streamStats = () => {
 			this.refresh()
 			this.loadSettings();
 		},
+		shouldUseProxy() {
+			return (new URL(this.url)).protocol === 'http:';
+		},
 		refresh() {
 			this.errorCount = 0;
 			this.collect()
@@ -93,54 +97,66 @@ window.streamStats = () => {
 			console.debug('[%s] Collecting', (new Date()).toLocaleTimeString());
 			this.loading = true;
 
-			axios.get(this.url, { cancelToken: source.token })
-				.then(({
-					data: {
-						icestats
-					}
-				}) => {
-					this.loading = false;
+			let responseHandler = ({
+				data: {
+					icestats
+				}
+			}) => {
+				this.loading = false;
 
-					this.icecast = icestats;
+				this.icecast = icestats;
 
-					var newState = 'offline';
+				var newState = 'offline';
 
-					if (icestats.hasOwnProperty('dummy')) {
-						this.streams = []
-						document.title = `${document.querySelector('title').dataset.original} Offline`;
-						newState = 'offline';
-					}
+				if (icestats.hasOwnProperty('dummy')) {
+					this.streams = []
+					document.title = `${document.querySelector('title').dataset.original} Offline`;
+					newState = 'offline';
+				}
 
-					if (icestats.hasOwnProperty('source')) {
-						this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
-						document.title = `${document.querySelector('title').dataset.original} ${this.streams.length} Online`;
-						newState = 'online';
-					}
+				if (icestats.hasOwnProperty('source')) {
+					this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
+					document.title = `${document.querySelector('title').dataset.original} ${this.streams.length} Online`;
+					newState = 'online';
+				}
 
-					if (this.currentState == 'online' && newState == 'offline') {
-						this.currentState = 'offline';
-						this.setInterval(this.offlineCheckInterval)
-					} else if (this.currentState == 'offline' && newState == 'online') {
-						this.currentState = 'online';
-						this.setInterval(this.onlineCheckInterval)
-					}
+				if (this.currentState == 'online' && newState == 'offline') {
+					this.currentState = newState;
+					this.setInterval(this.offlineCheckInterval)
+				} else if (this.currentState == 'offline' && newState == 'online') {
+					this.currentState = newState;
+					this.setInterval(this.onlineCheckInterval)
+				} else if (this.currentState == 'initial') {
+					this.currentState = newState;
+					this.setInterval(this.onlineCheckInterval)
+				}
 
-					this.setDates();
+				this.setDates();
 
-					this.errorCount = 0;
-				})
-				.catch(e => {
-					this.loading = false;
+				this.errorCount = 0;
+			}
 
-					if (axios.isCancel(e)) {
-						console.log('Request canceled', e.message);
-					} else {
-						this.errorCount++;
-						alert(e);
-						this.setInterval(this.offlineCheckInterval)
-						throw e;
-					}
-				});
+			let errorHandler = (e) => {
+				this.loading = false;
+				if (axios.isCancel(e)) {
+					console.log('Request canceled', e.message);
+				} else {
+					this.errorCount++;
+					alert(e);
+					this.setInterval(this.offlineCheckInterval)
+					throw e;
+				}
+			}
+
+			if (this.shouldUseProxy()) {
+				proxy(this.url)
+					.then(responseHandler)
+					.catch(errorHandler)
+			} else {
+				axios.get(this.url, { cancelToken: source.token })
+					.then(responseHandler)
+					.catch(errorHandler);
+			}
 		},
 		setInterval(interval) {
 			console.debug('setting timer to %s s', interval);
@@ -178,7 +194,7 @@ window.streamStats = () => {
 		},
 		init() {
 			this.loadSettings()
-
+			console.log(this)
 			if (this.url != null && this.url != 'https://example.com/status-json.xsl') {
 				this.start = false;
 				this.collect();
