@@ -1,10 +1,10 @@
 const axios = require('axios');
 
 export async function handler(event, context) {
-	let decoded = JSON.parse(event.body);
-	let requestedUrl = decoded.source;
-
 	try {
+		let decoded = JSON.parse(event.body);
+		let requestedUrl = decoded.source;
+
 		const response = await axios.get(requestedUrl);
 
 		return {
