@@ -4,10 +4,8 @@ export function proxy(url, headers = {}) {
 				source: url,
 				headers: headers
 			})
-			.then(({
-				data
-			}) => {
-				resolve(data);
+			.then(response => {
+				resolve(response);
 			})
 			.catch(error => {
 				reject(error)
