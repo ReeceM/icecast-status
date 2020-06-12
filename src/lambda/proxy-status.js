@@ -14,7 +14,7 @@ export async function handler(event, context) {
 	} catch (error) {
 		return {
 			statusCode: error.statusCode,
-			body: "unable to fetch data"
+			body: error
 		}
 	}
 }
