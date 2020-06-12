@@ -11,12 +11,14 @@
 
 import { init as settingsInit, setStorage } from './components/store'
 import { ClockWorks } from './components/clockWorks'
+import { proxy } from './components/proxy';
 import 'alpinejs'
 
-const axios = require('axios').default;
+window.axios = require('axios').default;
 const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 const clockWorks = new ClockWorks();
+
 clockWorks.push({
 	name: 'clock',
 	time: 1000,
@@ -50,7 +52,8 @@ window.streamStats = () => {
 		refreshedAt: null,
 		refreshesAt: null,
 		icecast: {},
-		currentState: 'online',
+		errorCount: 0,
+		currentState: 'initial',
 		loading: false,
 		saveSettings() {
 
@@ -58,22 +61,21 @@ window.streamStats = () => {
 				? this.newUrl
 				: this.url;
 
-			this.onlineCheckInterval = parseInt(this.newOnlineCheckInterval) != this.onlineCheckInterval
-				? parseInt(this.newOnlineCheckInterval)
-				: this.onlineCheckInterval;
-
-			this.offlineCheckInterval = parseInt(this.newOfflineCheckInterval) != this.offlineCheckInterval
-				? parseInt(this.newOfflineCheckInterval)
-				: this.offlineCheckInterval;
-
+			this.onlineCheckInterval = getIntervalSetting(this.newOnlineCheckInterval, this.onlineCheckInterval)
+			this.offlineCheckInterval = getIntervalSetting(this.newOfflineCheckInterval, this.offlineCheckInterval);
 			this.currentInterval = this.onlineCheckInterval;
+
 			setStorage(this);
 			this.open_settings = false;
 			this.start = false;
 			this.refresh()
 			this.loadSettings();
 		},
+		shouldUseProxy() {
+			return (new URL(this.url)).protocol === 'http:';
+		},
 		refresh() {
+			this.errorCount = 0;
 			this.collect()
 		},
 		collect() {
@@ -82,58 +84,82 @@ window.streamStats = () => {
 				return;
 			}
 
+			if (this.errorCount >= 4) {
+				alert('To many failed checks. Click the green refresh button to reset and try again');
+				return;
+			}
+
 			console.debug('[%s] Collecting', (new Date()).toLocaleTimeString());
 			this.loading = true;
 
-			axios.get(this.url, { cancelToken: source.token })
-				.then(({
-					data: {
-						icestats
-					}
-				}) => {
-					this.loading = false;
+			let responseHandler = ({
+				data: {
+					icestats
+				}
+			}) => {
+				this.loading = false;
 
-					this.icecast = icestats;
+				this.icecast = icestats;
 
-					var newState = 'offline';
+				var newState = 'offline';
 
-					if (icestats.hasOwnProperty('dummy')) {
-						this.streams = []
-						document.title = `${document.querySelector('title').dataset.original} Offline`;
-						newState = 'offline';
-					}
+				if (icestats.hasOwnProperty('dummy')) {
+					this.streams = []
+					document.title = `${document.querySelector('title').dataset.original} Offline`;
+					newState = 'offline';
+				}
 
-					if (icestats.hasOwnProperty('source')) {
-						this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
-						document.title = `${document.querySelector('title').dataset.original} ${this.streams.length} Online`;
-						newState = 'online';
-					}
+				if (icestats.hasOwnProperty('source')) {
+					this.streams = Array.isArray(icestats.source) ? icestats.source : [icestats.source];
+					document.title = `${document.querySelector('title').dataset.original} ${this.streams.length} Online`;
+					newState = 'online';
+				}
 
-					if (this.currentState == 'online' && newState == 'offline') {
-						this.currentState = 'offline';
-						this.setInterval(this.offlineCheckInterval)
-					} else if (this.currentState == 'offline' && newState == 'online') {
-						this.currentState = 'online';
-						this.setInterval(this.onlineCheckInterval)
-					}
+				if (this.currentState == 'online' && newState == 'offline') {
+					this.currentState = newState;
+					this.setInterval(this.offlineCheckInterval)
+				} else if (this.currentState == 'offline' && newState == 'online') {
+					this.currentState = newState;
+					this.setInterval(this.onlineCheckInterval)
+				} else if (this.currentState == 'initial') {
+					this.currentState = newState;
+					this.setInterval(this.onlineCheckInterval)
+				}
 
-					this.setDates();
-				})
-				.catch(e => {
-					this.loading = false;
+				this.setDates();
 
-					if (axios.isCancel(e)) {
-						console.log('Request canceled', e.message);
-					} else {
-						alert(e);
-						this.setInterval(this.offlineCheckInterval)
-						throw e;
-					}
-				});
+				this.errorCount = 0;
+			}
+
+			let errorHandler = (e) => {
+				this.loading = false;
+
+				if (axios.isCancel(e)) {
+					console.log('Request canceled', e.message);
+				} else {
+					this.errorCount++;
+					alert(e);
+					throw e;
+				}
+			}
+
+			if (this.shouldUseProxy()) {
+				proxy(this.url)
+					.then(responseHandler)
+					.catch(errorHandler)
+			} else {
+				axios.get(this.url, { cancelToken: source.token })
+					.then(responseHandler)
+					.catch(errorHandler);
+			}
 		},
 		setInterval(interval) {
 			console.debug('setting timer to %s s', interval);
 			this.currentInterval = interval;
+
+			if (interval <= 1000) {
+				interval = 10000;
+			}
 
 			clockWorks.pull({
 				name: 'refreshTimer',
@@ -159,7 +185,9 @@ window.streamStats = () => {
 
 			for (const setting in settings) {
 				if (settings.hasOwnProperty(setting) && this.hasOwnProperty(setting)) {
-					this[setting] = settings[setting];
+					this[setting] = settings[setting] != null
+						? settings[setting]
+						: this[setting];
 				}
 			}
 
@@ -182,4 +210,19 @@ window.streamStats = () => {
 			})
 		}
 	}
+}
+
+/**
+ * Get the new interval time frame
+ *
+ * @param {any} newTime
+ * @param {Number} oldTime
+ */
+function getIntervalSetting(newTime, oldTime) {
+	if (!parseInt(newTime)) {
+		return oldTime;
+	}
+	return (parseInt(newTime) != oldTime)
+		? parseInt(newTime)
+		: oldTime;
 }

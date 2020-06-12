@@ -11,7 +11,7 @@ onmessage = (message) => {
 			startTimer(message.data.timer);
 			postMessage({
 				'type': 'STATUS',
-				'message': 'Okay'
+				'message': 'Timer Added ' + message.data.timer.name
 			});
 			break;
 
@@ -19,13 +19,17 @@ onmessage = (message) => {
 			if (startTimers(message.data.timers)) {
 				postMessage({
 					'type': 'STATUS',
-					'message': 'Okay'
+					'message': 'Timer List updated'
 				})
 			}
 			break;
 
 		case 'REMOVE':
 			clearInterval(timerIds[message.data.timer.name]);
+			postMessage({
+				type: 'STATUS',
+				message: 'Timer Removed ' + message.data.timer.name
+			})
 			break;
 
 		default:

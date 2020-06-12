@@ -16,7 +16,7 @@
 	<meta property="og:title" content="IceCast Stream Status.">
 	<meta property="og:description"
 		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
-	<meta property="og:image" content="undraw_video_streaming_yyld.png">
+	<meta property="og:image" content="social.png">
 
 	<!-- Twitter -->
 	<meta property="twitter:card" content="summary_large_image">
@@ -24,7 +24,7 @@
 	<meta property="twitter:title" content="IceCast Stream Status.">
 	<meta property="twitter:description"
 		content="Static web app to see the status details of your streams from an icecast server. By @iexistin3d. Styled with TailwindCSS">
-	<meta property="twitter:image" content="undraw_video_streaming_yyld.png">
+	<meta property="twitter:image" content="social.png">
 
 	<link rel="stylesheet" href="./dist/app.css">
 	<style>
@@ -35,7 +35,7 @@
 </head>
 
 <body class="bg-gray-100 block h-screen" >
-	<div x-data="streamStats()" x-init="init()" worker-main>
+	<div x-data="streamStats()" x-init="init();" worker-main>
 		<nav @keydown.window.escape="mobileMenu = false" class="bg-blue-800">
 			<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 				<div class="flex items-center justify-between h-16">
@@ -234,75 +234,81 @@
 												</tr>
 											</thead>
 											<tbody class="bg-transparent md:bg-white">
-												<template x-if="streams != null" id="table_body_template">
-													<template x-for="stream in streams" :key="stream">
-														<tr class="flex flex-col mb-3 border border-gray-200 md:border-none md:table-row md:mb-0 bg-white shadow md:shadow-none md:bg-transparent">
-															<th
-																class="md:hidden px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-																Mountpoint
-															</th>
-															<td
-																class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-																<div
-																	class="text-sm leading-5 font-medium text-gray-900">
-																	<span class="inline-flex items-center">
-																		<a :href="stream.listenurl"
-																			class="hover:underline hover:text-gray-700"
-																			target="_blank"
-																			x-text="stream.listenurl"></a>
-																		<svg class="h-4 w-4 ml-1" fill="none"
-																			stroke-linecap="round"
-																			stroke-linejoin="round" stroke-width="2"
-																			stroke="currentColor" viewBox="0 0 24 24">
-																			<path
-																				d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
-																			</path>
-																		</svg>
-																	</span>
-																</div>
-																<div class="text-xs leading-5 font-light text-gray-500"
-																	x-text="stream.bitrate"></div>
-															</td>
-															<th
-																class="md:hidden px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-																Info
-															</th>
-															<td
-																class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-																<div class="text-sm leading-5 text-gray-900"
-																	x-text="stream.stream_start"></div>
-																<div class="text-sm leading-5 text-gray-500"
-																	x-text="stream.server_name"></div>
-															</td>
-															<th
-																class="md:hidden px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
-																Listeners <small
-																	class="text-gray-500 text-xs tracking-widest">(current/peak)</small>
-															</th>
-															<td
-																class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
-																<div class="flex flex-1 justify-center">
-																	<span
-																		class="inline-flex justify-center px-2 inline-flex text-sm leading-5 font-semibold tracking-widest rounded-full bg-green-100 text-green-800">
-																		<span x-text="stream.listeners"></span>
-																		/
-																		<span x-text="stream.listener_peak"></span>
-																	</span>
-																</div>
-															</td>
-														</tr>
-													</template>
+												<template x-for="stream in streams" :key="stream">
+													<tr class="flex flex-col mb-3 border border-gray-200 md:border-none md:table-row md:mb-0 bg-white shadow md:shadow-none md:bg-transparent">
+														<th
+															class="md:hidden px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+															Mountpoint
+														</th>
+														<td
+															class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+															<div
+																class="text-sm leading-5 font-medium text-gray-900">
+																<span class="inline-flex items-center">
+																	<a :href="stream.listenurl"
+																		class="hover:underline hover:text-gray-700"
+																		target="_blank"
+																		x-text="stream.listenurl"></a>
+																	<svg class="h-4 w-4 ml-1" fill="none"
+																		stroke-linecap="round"
+																		stroke-linejoin="round" stroke-width="2"
+																		stroke="currentColor" viewBox="0 0 24 24">
+																		<path
+																			d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
+																		</path>
+																	</svg>
+																</span>
+															</div>
+															<div class="text-xs leading-5 font-light text-gray-500"
+																x-text="stream.bitrate"></div>
+														</td>
+														<th
+															class="md:hidden px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+															Info
+														</th>
+														<td
+															class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+															<div class="text-sm leading-5 text-gray-900"
+																x-text="stream.stream_start"></div>
+															<div class="text-sm leading-5 text-gray-500"
+																x-text="stream.server_name"></div>
+														</td>
+														<th
+															class="md:hidden px-6 py-3 border-b border-gray-200 bg-gray-50 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">
+															Listeners <small
+																class="text-gray-500 text-xs tracking-widest">(current/peak)</small>
+														</th>
+														<td
+															class="px-6 py-4 whitespace-no-wrap border-b border-gray-200">
+															<div class="flex flex-1 justify-center">
+																<span
+																	class="inline-flex justify-center px-2 inline-flex text-sm leading-5 font-semibold tracking-widest rounded-full bg-green-100 text-green-800">
+																	<span x-text="stream.listeners"></span>
+																	/
+																	<span x-text="stream.listener_peak"></span>
+																</span>
+															</div>
+														</td>
+													</tr>
 												</template>
 											</tbody>
 										</table>
 									</div>
 								</template>
-
+								<div x-show="(streams == null || streams.length == 0) && start == false" class="flex flex-1 items-center flex-col min-w-full bg-white p-4">
+									<div>
+										<img class="max-w-xs h-64 px-2 md:p-0" src="./undraw_no_data_qbuo.svg" alt="" srcset="">
+									</div>
+									<div class="inline-grid grid-rows-2 items-center text-center">
+										<h3 class="text-2xl mb-1 text-gray-800 font-semibold tracking-wide">No Streams Online</h3>
+										<span class="text-sm text-gray-500">There was no stream data that could be retrieved, system will refresh occasionally to check</span>
+									</div>
+								</div>
 								<!--  show a now streams notification and help tips thing-->
 								<template x-if="start" id="template_alternate_help">
 									<div class="flex justify-center">
 										<div
-											class="flex flex-grow flex-col p-6 w-full md:max-w-2xl bg-gray-100 shadow-md rounded">
+											class="flex flex-grow flex-col p-6 w-full md:max-w-2xl bg-white shadow-md rounded">
 											<div class="inline-flex justify-center">
 												<h2 class="text-3xl text-gray-800 font-bold">You have some settings to finish</h2>
 											</div>
