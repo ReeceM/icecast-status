@@ -13,10 +13,11 @@ import { init as settingsInit, setStorage } from './components/store'
 import { ClockWorks } from './components/clockWorks'
 import 'alpinejs'
 
-const axios = require('axios').default;
+window.axios = require('axios').default;
 const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
 const clockWorks = new ClockWorks();
+
 clockWorks.push({
 	name: 'clock',
 	time: 1000,
@@ -50,6 +51,7 @@ window.streamStats = () => {
 		refreshedAt: null,
 		refreshesAt: null,
 		icecast: {},
+		errorCount: 0,
 		currentState: 'online',
 		loading: false,
 		saveSettings() {
@@ -74,11 +76,17 @@ window.streamStats = () => {
 			this.loadSettings();
 		},
 		refresh() {
+			this.errorCount = 0;
 			this.collect()
 		},
 		collect() {
 			if (this.loading == true) {
 				console.warn('Currently loading');
+				return;
+			}
+
+			if (this.errorCount >= 4) {
+				alert('To many failed checks. Click the green refresh button to reset and try again');
 				return;
 			}
 
@@ -118,6 +126,8 @@ window.streamStats = () => {
 					}
 
 					this.setDates();
+
+					this.errorCount = 0;
 				})
 				.catch(e => {
 					this.loading = false;
@@ -125,6 +135,7 @@ window.streamStats = () => {
 					if (axios.isCancel(e)) {
 						console.log('Request canceled', e.message);
 					} else {
+						this.errorCount++;
 						alert(e);
 						this.setInterval(this.offlineCheckInterval)
 						throw e;

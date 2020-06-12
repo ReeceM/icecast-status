@@ -1,4 +1,4 @@
 [build]
-	Command = "npm run production && npm run build:lambda"
-  functions = "functions"
-	Publish = "./public"
+	command = "npm run production && npm run build:lambda"
+	functions = "functions"
+	publish = "./public"

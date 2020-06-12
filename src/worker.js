@@ -55,7 +55,7 @@ function startTimer(timer, index) {
 			type: 'TIMER',
 			timer: timer,
 		})
-	}, timer.time);
+	}, timer.time ?? 1e4);
 
 	return true;
 }
