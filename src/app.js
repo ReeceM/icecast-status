@@ -157,10 +157,6 @@ window.streamStats = () => {
 			console.debug('setting timer to %s s', interval);
 			this.currentInterval = interval;
 
-			if (interval <= 1000) {
-				interval = 10000;
-			}
-
 			clockWorks.pull({
 				name: 'refreshTimer',
 			});
