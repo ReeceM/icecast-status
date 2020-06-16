@@ -15,6 +15,14 @@ export class ClockWorks {
 			this.spawnLocalTimers(_timers);
 		}
 
+		Array.prototype.hasTimer = function (name) {
+			return this.findIndex(timer => { return timer.name == name });
+		}
+
+		Object.defineProperty(Array.prototype, 'hasTimer', {
+			configurable: false,
+		})
+
 		return this;
 	}
 
@@ -36,18 +44,20 @@ export class ClockWorks {
 	 * Remove timer
 	 */
 	pull(timer) {
-		if (timer instanceof Object) {
-			this.timers = this.timers.filter((timersTimer, index) => {
-				return timersTimer.name != timer.name;
-			});
-		} else {
-			throw new Error('timer needs to be an object to be able to remove');
+
+		if (this.timers.hasTimer(timer) == -1) {
+			console.error('%s Does not exist', timer);
 		}
 
 		this.worker.postMessage({
 			type: 'REMOVE',
-			timer: {name: timer.name},
+			timer: {name: timer},
 		})
+
+		this.timers = this.timers.filter((timersTimer) => {
+			return timersTimer.name != timer;
+		});
+
 	}
 
 	/**

@@ -59,7 +59,7 @@ function startTimer(timer, index) {
 			type: 'TIMER',
 			timer: timer,
 		})
-	}, timer.time >= 999 ? timer : 10000 );
+	}, timer.time >= 999 ? timer.time : 10000 );
 
 	return true;
 }

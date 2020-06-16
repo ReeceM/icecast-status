@@ -9,8 +9,8 @@
  * @version 0.2.1
  */
 
-import { init as settingsInit, setStorage } from './components/store'
-import { ClockWorks } from './components/clockWorks'
+import { init as settingsInit, setStorage } from './components/store';
+import { ClockWorks } from './components/clockWorks';
 import { proxy } from './components/proxy';
 import 'alpinejs'
 
@@ -26,6 +26,24 @@ clockWorks.push({
 		document.querySelector('[worker-clock]').__x.$data.currentTime = (new Date()).toLocaleTimeString();
 	}
 });
+
+let requests = {
+	count: 0,
+	limit: 6,
+	recover: null,
+};
+
+setInterval(() => {
+	if (window.EnAbLeDeBuG) { // :p
+		console.debug('Resetting request limit from %s', requests.count);
+	}
+
+	if (requests.count >= requests.limit) {
+		requests.recover();
+	}
+
+	requests.count = 0;
+}, 60e3 /* 1 minute / 60 seconds / 60 000ms, 4 seconds to read */);
 
 window.headerTimer = () => {
 	return {
@@ -157,14 +175,20 @@ window.streamStats = () => {
 			console.debug('setting timer to %s s', interval);
 			this.currentInterval = interval;
 
-			clockWorks.pull({
-				name: 'refreshTimer',
-			});
+			clockWorks.pull('refreshTimer');
 
 			clockWorks.push({
 				name: 'refreshTimer',
 				time: interval * 1000,
-				callback() {
+				callback: () => {
+					requests.count++;
+
+					if (requests.count >= requests.limit) {
+						clockWorks.pull('refreshTimer');
+						console.info('Throttling introduced, will restore in soon');
+						return;
+					}
+
 					console.log('Running');
 					document.querySelector('[worker-main]').__x.$data.collect()
 				}
@@ -197,6 +221,12 @@ window.streamStats = () => {
 				this.collect();
 			} else {
 				this.start = true;
+			}
+
+			if (requests.recover == null) {
+				requests.recover = () => {
+					this.setInterval(this.currentInterval);
+				}
 			}
 
 			window.addEventListener('beforeunload', () => {
