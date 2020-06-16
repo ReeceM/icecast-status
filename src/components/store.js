@@ -3,10 +3,10 @@
  *
  * @see https://github.com/reecem/icecast-status
  * @copyright 2020 ReeceM
- * @version 0.2.1
+ * @version 0.2.2
  */
 let instanceSettings = {
-	version: '0.2.1',
+	version: '0.2.2',
 	onlineCheckInterval: 30,
 	offlineCheckInterval: 60,
 	currentInterval: 10,

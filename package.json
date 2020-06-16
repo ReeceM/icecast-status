@@ -1,12 +1,12 @@
 {
     "name": "icecast-status",
-    "version": "0.4.1",
+    "version": "0.4.2",
     "description": "checks the status of an icecast server",
     "main": "public/main.js",
     "scripts": {
         "dev": "cross-env NODE_ENV=development webpack --mode development --config webpack.config.js; npm run cp-html",
         "tailwind-start": "tailwind build src/app.css -o public/dist/app.css",
-        "cp-html": "cp src/index.html public/; cp src/worker.js public/dist/clock-worker.js",
+        "cp-html": "cp src/index.html public/; cp src/components/worker.js public/dist/clock-worker.js",
         "build": "cross-env NODE_ENV=production webpack --mode production --config webpack.config.js",
 		"build:lambda": "netlify-lambda build ./src/lambda",
         "build:tailwind": "postcss src/app.css --output public/dist/app.css --env production",

@@ -2,6 +2,13 @@
 
 All notable changes to `icecast-status` will be documented in this file.
 
+## 0.4.2 - 2020-06-16
+## Fixed
+- The timer wasn't firing correctly
+
+## Added
+- Throttle on the requests, max 6 per minute
+
 ## 0.4.1 - 2020-06-12
 ## Fixed
 - The settings would all go to null/NaN when just clicking save sometimes
