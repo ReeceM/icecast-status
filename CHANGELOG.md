@@ -2,6 +2,11 @@
 
 All notable changes to `icecast-status` will be documented in this file.
 
+## 0.5.0 - 2020-06-22
+## Added
+- Shareable settings that can be sent and auto-loaded in other browsers.
+	- this is version locked, can't go back a version that is stored in the memory thing
+
 ## 0.4.2 - 2020-06-16
 ## Fixed
 - The timer wasn't firing correctly
