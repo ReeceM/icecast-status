@@ -73,6 +73,8 @@ window.streamStats = () => {
 		errorCount: 0,
 		currentState: 'initial',
 		loading: false,
+		showShareInput: false,
+		shareUrl: "",
 		saveSettings() {
 
 			this.url = this.newUrl != null
@@ -202,6 +204,26 @@ window.streamStats = () => {
 		},
 		loadSettings() {
 			var settings = settingsInit();
+			var hash = location.hash.split('/');
+			let shouldSave = false;
+
+			try {
+				if (hash.length === 2 && hash[0] === '#settings') {
+					let shared = atob(hash[1]);
+					shared = JSON.parse(shared);
+					if (settings.version === shared.v) {
+						settings.version = shared.v;
+						settings.onlineCheckInterval = shared.o;
+						settings.offlineCheckInterval = shared.f;
+						settings.url = shared.u;
+						settings.currentInterval = shared.c;
+						shouldSave = true;
+					}
+				}
+			} catch (error) {
+				console.error('[settings] Unable to load the settings');
+				console.error(error);
+			}
 
 			for (const setting in settings) {
 				if (settings.hasOwnProperty(setting) && this.hasOwnProperty(setting)) {
@@ -212,6 +234,22 @@ window.streamStats = () => {
 			}
 
 			this.currentInterval = this.onlineCheckInterval;
+
+			if (shouldSave) {
+				setStorage(this);
+			}
+		},
+		shareSettings() {
+			var { currentInterval, url, onlineCheckInterval, offlineCheckInterval, version } = settingsInit();
+			var settings = btoa(JSON.stringify({
+				v: version,
+				o: onlineCheckInterval,
+				f: offlineCheckInterval,
+				u: url,
+				c: currentInterval
+			}));
+			this.shareUrl = `${location.origin}#settings/${settings}`;
+			this.showShareInput = true;
 		},
 		init() {
 			this.loadSettings()
