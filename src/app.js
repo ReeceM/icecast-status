@@ -290,3 +290,9 @@ function getIntervalSetting(newTime, oldTime) {
 		? parseInt(newTime)
 		: oldTime;
 }
+
+window.theDate = () => {
+	return {
+		current: `2020 - ${(new Date()).getFullYear()}`
+	}
+}
