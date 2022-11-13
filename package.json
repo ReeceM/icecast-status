@@ -44,7 +44,7 @@
         "tailwindcss": "^1.4.6",
         "terser-webpack-plugin": "^3.0.2",
         "webpack": "^4.42.1",
-        "webpack-cli": "^3.3.11"
+        "webpack-cli": "^3.3.12"
     },
     "dependencies": {
         "alpinejs": "^2.3.5",
